@@ -93,7 +93,7 @@ class SQLDatabase():
                 INSERT INTO Users(username, password, salt, publickey ,is_admin)
                 VALUES('{username}', '{password}', '{salt}', '{publickey}',{is_admin})
             """
-        sql_cmd = sql_cmd.format(username=username, password=hashed_pwd, salt=salt, publickey=publickey,is_admin=admin)
+        sql_cmd = sql_cmd.format(username=username, password=hashed_pwd, salt=salt, publickey=publickey, is_admin=admin)
 
         self.execute(sql_cmd)
         self.commit()
@@ -111,7 +111,7 @@ class SQLDatabase():
 
         sql_query = sql_query.format(username=username)
         self.execute(sql_query)
-        ret=self.cur.fetchone()
+        ret = self.cur.fetchone()
         if ret:
             return ret[0]
         else:
@@ -210,3 +210,40 @@ class SQLDatabase():
         for each in result:
             friend_ls.append(self.get_username_by_Id(each[1]))
         return friend_ls
+
+    def get_publickey_by_username(self, username):
+        sql_query = """
+                SELECT publickey
+                FROM Users
+                WHERE username = '{username}'
+            """
+
+        sql_query = sql_query.format(username=username)
+        self.execute(sql_query)
+        ret = self.cur.fetchone()
+        if ret:
+            return ret[0]
+        else:
+            return None
+
+    def send_message(self, sender_name, receiver_name, message):
+        sql_query = """
+                UPDATE relations
+                SET message_sending = '{message}'
+                WHERE user_Id = '{user_Id}' AND friend_Id = '{friend_Id}'
+            """
+        sql_query = sql_query.format(message=message,
+                                     user_Id=self.get_userId_by_name(sender_name),
+                                     friend_Id=self.get_userId_by_name(receiver_name))
+        self.execute(sql_query)
+
+    def receive_message(self, receiver_name, sender_name):
+        sql_query = """
+                SELECT message_sending
+                FROM relations
+                WHERE user_Id = '{user_Id}' AND friend_Id = '{friend_Id}'
+            """
+        sql_query = sql_query.format(message=message,
+                                     user_Id=self.get_userId_by_name(receiver_name),
+                                     friend_Id=self.get_userId_by_name(sender_name))
+        self.execute(sql_query)
