@@ -55,6 +55,7 @@ class SQLDatabase():
             username TEXT NOT NULL UNIQUE ,
             password TEXT NOT NULL ,
             salt TEXT NOT NULL ,
+            publickey TEXT ,
             is_admin INTEGER DEFAULT 0
         )""")
 
@@ -63,20 +64,22 @@ class SQLDatabase():
         self.execute("""CREATE TABLE relations(
             user_Id INTEGER REFERENCES  Users(Id),
             friend_Id INTEGER REFERENCES Users(Id),
+            message_sending TEXT,
             PRIMARY KEY (user_Id, friend_Id)
         )""")
 
         self.commit()
 
         # Add our admin user
-        self.add_user('admin', admin_password, admin=1)
+
+        # self.add_user('admin', admin_password, admin=1)
 
     # -----------------------------------------------------------------------------
     # User handling
     # -----------------------------------------------------------------------------
 
     # Add a user to the database
-    def add_user(self, username, password, admin=0):
+    def add_user(self, username, password, publickey, admin=0):
 
         salt_value = os.urandom(32)
         h_256 = hashlib.new('sha256')
@@ -87,10 +90,10 @@ class SQLDatabase():
         salt = b64encode(salt_value).decode('utf-8')
 
         sql_cmd = """
-                INSERT INTO Users(username, password, salt, is_admin)
-                VALUES('{username}', '{password}', '{salt}', {is_admin})
+                INSERT INTO Users(username, password, salt, publickey ,is_admin)
+                VALUES('{username}', '{password}', '{salt}', '{publickey}',{is_admin})
             """
-        sql_cmd = sql_cmd.format(username=username, password=hashed_pwd, salt=salt, is_admin=admin)
+        sql_cmd = sql_cmd.format(username=username, password=hashed_pwd, salt=salt, publickey=publickey,is_admin=admin)
 
         self.execute(sql_cmd)
         self.commit()
@@ -141,8 +144,8 @@ class SQLDatabase():
         print(user_id)
         print(friend_id)
         sql_cmd = """
-                INSERT INTO relations(user_Id,friend_Id)
-                VALUES({user_Id}, {friend_Id})
+                INSERT INTO relations(user_Id,friend_Id,message_sending)
+                VALUES({user_Id}, {friend_Id},null)
             """
         sql_cmd1 = sql_cmd.format(user_Id=user_id, friend_Id=friend_id)
         self.execute(sql_cmd1)

@@ -4,10 +4,10 @@
     maybe some simple program logic
 '''
 
-from bottle import route, get, post, error, request, static_file
+from bottle import route, get, post, error, request, static_file, template
 
 import model
-
+import ssl
 
 # -----------------------------------------------------------------------------
 # Static file paths
@@ -79,6 +79,14 @@ def get_index():
 
 
 # -----------------------------------------------------------------------------
+@get('/register')
+def get_register_controller():
+    '''
+        get_login
+
+        Serves the login page
+    '''
+    return model.register_form()
 
 # Display the login page
 @get('/login')
@@ -92,6 +100,16 @@ def get_login_controller():
 
 
 # -----------------------------------------------------------------------------
+@post('/register')
+def post_register():
+    # Handle the form processing
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+    public_key = request.forms.get('public_key')
+
+    print(username, password, "\n", public_key)
+    # Call the appropriate method
+    return model.register(username, password, public_key)
 
 # Attempt the login
 @post('/login')
@@ -110,6 +128,21 @@ def post_login():
     # Call the appropriate method
     return model.login_check(username, password)
 
+
+@get('/friendlist')
+# @app.route('/friendlist', methods=['GET'])
+def get_friendlist(condition, friend_list):
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+
+    if condition == True:
+        return template('friendlist.tpl', friendlist=friend_list, title='Friends List')
+
+@route('/message/<friend>')
+def send_message(friend):
+    # replace this with your code to display a form to send a message to the selected friend
+    return model.send_message(friend)
+    #return f'Send a message to {friend}'
 
 # -----------------------------------------------------------------------------
 

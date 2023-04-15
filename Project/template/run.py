@@ -15,7 +15,7 @@
 # -----------------------------------------------------------------------------
 import os
 import sys
-from bottle import run
+from bottle import run, Bottle
 import sql
 # -----------------------------------------------------------------------------
 # You may eventually wish to put these in their own directories and then load 
@@ -24,6 +24,7 @@ import sql
 # For the template, we will keep them together
 
 import model
+import ssl
 import view
 import controller
 
@@ -36,8 +37,15 @@ host = 'localhost'
 # Test port, change to the appropriate port to host
 port = 8081
 
+# Run server
+server = 'gunicorn'
+
 # Turn this off for production
 debug = True
+
+# private key and certificate files path
+keyfile = 'trusted/hellfish.test.key'
+certfile = 'trusted/hellfish.test.crt'
 
 
 def run_server():
@@ -45,14 +53,10 @@ def run_server():
         run_server
         Runs a bottle server
     """
-    # app = Bottle()
-    # database_args = "./database/system.db"
-    # sql_db = sql.SQLDatabase(database_args=database_args)
-    # app.config['db']=sql_db
-    model.setup()
-    run(host=host, port=port, debug=debug)
 
+    # model.setup()
 
+    run(host=host, port=port, server=server, debug=debug, keyfile=keyfile, certfile=certfile)
 
 
 # -----------------------------------------------------------------------------

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>List of Friends</title>
+</head>
+<body>
+	<h1>List of Friends:</h1>
+	<ul>
+		% for friend in friends:
+			<li><a href="/send_message/{{friend}}">{{friend}}</a></li>
+		% end
+	</ul>
+</body>
+</html>

@@ -10,7 +10,8 @@ import os
 import sql
 import view
 import random
-from bottle import default_app
+
+import controller
 
 # Initialise our views, all arguments are defaults for the template
 page_view = view.View()
@@ -20,18 +21,19 @@ page_view = view.View()
 #
 # # Get the database instance from the app config
 # sql_db = app.config['db']
-database_args = os.getcwd()+"/database/system.db"
+database_args = os.getcwd() + "/database/system.db"
 sql_db = sql.SQLDatabase(database_args=database_args)
 print(sql_db)
+
 
 def setup():
     print(333)
     sql_db.database_setup("password")
-    sql_db.add_user("Derrick","123456",0)
-    sql_db.add_user("Emily","123456",0)
-    sql_db.add_relations("Derrick","Emily")
-    print(sql_db.get_friend_list("Derrick"))
-    print(sql_db.get_friend_list("Emily"))
+    # sql_db.add_user("Derrick", "123456", 0)
+    # sql_db.add_user("Emily", "123456", 0)
+    # sql_db.add_relations("Derrick", "Emily")
+    # print(sql_db.get_friend_list("Derrick"))
+    # print(sql_db.get_friend_list("Emily"))
 
 
 # -----------------------------------------------------------------------------
@@ -59,6 +61,14 @@ def login_form():
 
 
 # -----------------------------------------------------------------------------
+def register_form():
+    return page_view("register")
+
+
+def register(username, password, publickey):
+    sql_db.add_user(username, password, publickey, 0)
+    # return page_view("login")
+    return page_view("keyGen")
 
 # Check the login credentials
 def login_check(username, password):
@@ -74,22 +84,18 @@ def login_check(username, password):
 
     # By default, assume good creds
     login = True
+
+    # Perform login logic here
     if sql_db.check_credentials(username, password):
-        return page_view("valid", name=username)
+        friend_list = sql_db.get_friend_list(username)
+        return controller.get_friendlist(True, friend_list)
+        # return page_view("valid", name=username)
     else:
-        return page_view("invalid", reason="errorrrrr!")
-    # if username != "admin":  # Wrong Username
-    #     err_str = "Incorrect Username"
-    #     login = False
-    #
-    # if password != "password":  # Wrong password
-    #     err_str = "Incorrect Password"
-    #     login = False
-    #
-    # if login:
-    #     return page_view("valid", name=username)
-    # else:
-    #     return page_view("invalid", reason=err_str)
+        return page_view("invalid", reason="Incorrect Account Info!")
+
+
+def send_message(friend_name):
+    return page_view("send_message")
 
 
 # -----------------------------------------------------------------------------

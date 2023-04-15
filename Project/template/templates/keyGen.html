@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Web Page</title>
+  </head>
+  <body>
+    <h1>Generate ECDH Key Pair</h1>
+    <div id="key-pair"></div>
+    <script type="module" src="path/to/ecdh-key-pair.js"></script>
+    <script>
+      (async () => {
+        const keyPair = await window.ecdhKeyPair();
+        const publicKey = keyPair.publicKeyJwk;
+        const privateKey = keyPair.privateKeyJwk;
+        const keyPairElement = document.getElementById("key-pair");
+        keyPairElement.innerHTML = `
+          <p>Public Key: ${JSON.stringify(publicKey)}</p>
+          <p>Private Key: ${JSON.stringify(privateKey)}</p>
+        `;
+      })();
+    </script>
+  </body>
+</html>
