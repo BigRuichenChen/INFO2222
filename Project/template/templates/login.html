@@ -1,5 +1,63 @@
 
 Login with a username and password
+<!--?</p>-->
+<!--?    <p>-->
+<!--?        <form id="login-form">-->
+<!--?            Username: <input name="username" type="text" id="username" />-->
+<!--?            </br>-->
+<!--?            Password: <input name="password" type="password" id="password" />-->
+<!--?            </br>-->
+<!--?            <input value="Login" type="submit" />-->
+<!--?        </form>-->
+<!--?    </p>-->
+<!--?    <script>-->
+<!--?        const loginForm = document.getElementById('login-form');-->
+
+<!--?        loginForm.addEventListener('submit', async (e) => {-->
+<!--?            e.preventDefault();-->
+
+<!--?            const username = document.getElementById('username').value;-->
+<!--?            const password = document.getElementById('password').value;-->
+
+<!--?            // Fetch the public key from the server-->
+<!--?            const response = await fetch('/get-public-key');-->
+<!--?            const publicKeyPEM = await response.text();-->
+<!--?            alert(publicKeyPEM);-->
+<!--?            // Encrypt the password using the public key-->
+<!--?            const encryptor = new JSEncrypt();-->
+
+<!--?            encryptor.setPublicKey(publicKeyPEM);-->
+
+<!--?            const encryptedPassword = encryptor.encrypt(password);-->
+
+<!--?            // Send the encrypted password to the server-->
+<!--?            const result = await fetch('/login', {-->
+<!--?                method: 'POST',-->
+<!--?                headers: {-->
+<!--?                    'Content-Type': 'application/json'-->
+<!--?                },-->
+<!--?                body: JSON.stringify({ username, encryptedPassword })-->
+<!--?            });-->
+
+<!--?            // Handle the server response here-->
+<!--?            if (result.ok) {-->
+<!--?alert(6);-->
+<!--?                const data = await result.json();-->
+<!--?                if (data.success) {-->
+<!--?                    // Login was successful, redirect the user to another page or display a success message-->
+<!--?                    window.location.href = "/valid"; // Redirect to the dashboard page-->
+<!--?                } else {-->
+<!--?                    // Display an error message to the user-->
+<!--?                    alert("Login failed: " + data.message);-->
+<!--?                }-->
+<!--?            } else {-->
+<!--?                // Display a general error message to the user-->
+<!--?                alert("An error occurred. Please try again later.");-->
+<!--?            }-->
+<!--?        });-->
+<!--?    </script>-->
+<!--?</center>-->
+
 </p>
 <p>
 <form action="/login" method="post">
@@ -11,4 +69,3 @@ Login with a username and password
 </form>
 </p>
 </center>
-

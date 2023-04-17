@@ -17,6 +17,7 @@ import os
 import sys
 from bottle import run, Bottle
 import sql
+import rsa
 # -----------------------------------------------------------------------------
 # You may eventually wish to put these in their own directories and then load 
 # Each file separately
@@ -44,8 +45,8 @@ server = 'gunicorn'
 debug = True
 
 # private key and certificate files path
-keyfile = 'trusted/hellfish.test.key'
-certfile = 'trusted/hellfish.test.crt'
+keyfile = 'certs/server.key'
+certfile = 'certs/server.crt'
 
 
 def run_server():
@@ -55,7 +56,8 @@ def run_server():
     """
 
     # model.setup()
-
+    #model.generateKeys()
+    # model.sql_db.add_relations("test1","test2")
     run(host=host, port=port, server=server, debug=debug, keyfile=keyfile, certfile=certfile)
 
 
@@ -70,6 +72,18 @@ def run_server():
 #     '''
 #     pass
 
+def generateKeys():
+    (publicKey, privateKey) = rsa.newkeys(1024)
+    with open('keys/publicKey.pem', 'wb') as p:
+        p.write(publicKey.save_pkcs1('PEM'))
+    with open('keys/privateKey.pem', 'wb') as p:
+        p.write(privateKey.save_pkcs1('PEM'))
+def loadKeys():
+    with open('keys/publicKey.pem', 'rb') as p:
+        publicKey = rsa.PublicKey.load_pkcs1(p.read())
+    with open('keys/privateKey.pem', 'rb') as p:
+        privateKey = rsa.PrivateKey.load_pkcs1(p.read())
+    return privateKey, publicKey
 
 def manage_db():
     """

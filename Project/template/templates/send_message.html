@@ -1,11 +1,12 @@
-Message a friend
+<p>Enter a message below!</p>
 <p>
-<form action="/message/<friend>" method="post">
-    Message: <input name="msg" type="text" />
+<form action="/send_message" method="post">
+    Message: <input name="message" type="text" />
+    Sender: <input name="sender" type="text" />
+    Receiver: <input name="receiver" type="text" />
 <!--?    <script src="js/encrypt.js"></script>-->
 </br>
     <input value="Send Message" type="submit" />
-
 </form>
 </p>
 </center>

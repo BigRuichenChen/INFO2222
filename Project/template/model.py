@@ -13,6 +13,10 @@ import random
 
 import controller
 
+import rsa
+
+privateKeyPath = 'keys/privateKey.pem'
+publicKeyPath = 'keys/publicKey.pem'
 # Initialise our views, all arguments are defaults for the template
 page_view = view.View()
 
@@ -35,6 +39,48 @@ def setup():
     # print(sql_db.get_friend_list("Derrick"))
     # print(sql_db.get_friend_list("Emily"))
 
+
+def generateKeys():
+    # Generate the key pair
+    public_key, private_key = rsa.newkeys(2048)
+    # Save the private key to a file
+    with open(privateKeyPath, 'wb') as private_key_file:
+        private_key_pem = private_key.save_pkcs1()
+        private_key_file.write(private_key_pem)
+
+    # Save the public key to a file
+    with open(publicKeyPath, 'wb') as public_key_file:
+        public_key_pem = public_key.save_pkcs1()
+        public_key_file.write(public_key_pem)
+
+
+def loadKeys():
+    with open(publicKeyPath, 'rb') as public_key_file:
+        public_key_pem = public_key_file.read().decode()
+    with open(privateKeyPath, 'rb') as private_key_file:
+        private_key_pem = private_key_file.read().decode()
+    return private_key_pem, public_key_pem
+
+
+def encrypt(message, key):
+    return rsa.encrypt(message.encode('ascii'), key)
+
+
+def decrypt(ciphertext, key):
+    try:
+        return rsa.decrypt(ciphertext, key).decode('ascii')
+    except:
+        return False
+
+
+# def sign(message, key):
+#     return rsa.sign(message.encode('ascii'), key, 'SHA-1')
+#
+# def verify(message, signature, key):
+#     try:
+#         return rsa.verify(message.encode('ascii'), signature, key,) == 'SHA-1'
+#     except:
+#         return False
 
 # -----------------------------------------------------------------------------
 # Index
@@ -70,6 +116,7 @@ def register(username, password, publickey):
     # return page_view("login")
     return page_view("keyGen")
 
+
 # Check the login credentials
 def login_check(username, password):
     '''
@@ -97,7 +144,29 @@ def login_check(username, password):
 def send_message(friend_name):
     return page_view("send_message")
 
+def choose_messagetype(friend):
+    '''
+        index
+        Returns the view for the index
+    '''
+    return controller.get_choosemessagetype(friend)
 
+def get_receivemessage(receiver_name,chosen_friend):
+    message = sql_db.receive_message( receiver_name,chosen_friend)
+    print(message)
+    return message
+
+
+def send_message():
+    return page_view("send_message")
+
+def receive_form():
+    return page_view("receive_form")
+# def store_message(message,sender,receiver):
+#     sql_db.send_message(message,sender,receiver)
+def show_message(message,sender,receiver):
+    sql_db.send_message( sender, receiver,message)
+    return controller.get_showmessage(message)
 # -----------------------------------------------------------------------------
 # About
 # -----------------------------------------------------------------------------

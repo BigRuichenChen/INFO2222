@@ -3,11 +3,17 @@
     You should not have anything beyond basic page loads, handling forms and 
     maybe some simple program logic
 '''
+import base64
+import json
 
-from bottle import route, get, post, error, request, static_file, template
+from bottle import route, get, post, error, request, static_file, template, response
 
 import model
 import ssl
+import view
+
+page_view = view.View()
+
 
 # -----------------------------------------------------------------------------
 # Static file paths
@@ -88,6 +94,7 @@ def get_register_controller():
     '''
     return model.register_form()
 
+
 # Display the login page
 @get('/login')
 def get_login_controller():
@@ -97,6 +104,18 @@ def get_login_controller():
         Serves the login page
     '''
     return model.login_form()
+
+
+@get('/get-public-key')
+def get_public_key():
+    # print(model.loadKeys()[1].save_pkcs1('PEM'))
+    # # response.content_type = 'text/plain'
+    # response.content_type = 'application/json'
+    # return model.loadKeys()[1].save_pkcs1('PEM')
+    public_key_pem = model.loadKeys()[1]
+    print(public_key_pem)
+    response.content_type = 'application/json'
+    return json.dumps({'publicKey': public_key_pem})
 
 
 # -----------------------------------------------------------------------------
@@ -110,6 +129,7 @@ def post_register():
     print(username, password, "\n", public_key)
     # Call the appropriate method
     return model.register(username, password, public_key)
+
 
 # Attempt the login
 @post('/login')
@@ -125,26 +145,141 @@ def post_login():
     username = request.forms.get('username')
     password = request.forms.get('password')
 
+    # encrypted_password = request.json['encryptedPassword']
+    # password=model.decrypt(encrypted_password,model.loadKeys()[0])
+
     # Call the appropriate method
     return model.login_check(username, password)
 
 
+# -----------------------------------------------------------------------------
+# print friend list
 @get('/friendlist')
 # @app.route('/friendlist', methods=['GET'])
-def get_friendlist(condition, friend_list):
+def get_friendlist(condition, friend_list, header="header", tailer="tailer"):
     username = request.forms.get('username')
-    password = request.forms.get('password')
 
     if condition == True:
-        return template('friendlist.tpl', friendlist=friend_list, title='Friends List')
+        body_template = template('friendlist.tpl', name=username, friendlist=friend_list, title='Friends List')
+        header_template = page_view.load_template(header)
+        tailer_template = page_view.load_template(tailer)
 
-@route('/message/<friend>')
-def send_message(friend):
-    # replace this with your code to display a form to send a message to the selected friend
-    return model.send_message(friend)
-    #return f'Send a message to {friend}'
+        rendered_template = page_view.render(
+            body_template=body_template,
+            header_template=header_template,
+            tailer_template=tailer_template)
+
+        return rendered_template
+
+        # return model.friends_list(username)
+
+
+@post('/friendlist')
+def post_friendlist():
+    '''
+        post_login
+
+        Handles login attempts
+        Expects a form containing 'username' and 'password' fields
+    '''
+
+    friendname = request.forms.get('friendname')
+    # Handle the form processing
+    return model.choose_messagetype(friendname)
+
 
 # -----------------------------------------------------------------------------
+
+@get('/choosemessagetype')
+def get_choosemessagetype(friend, header="header", tailer="tailer"):
+    '''
+        get_about
+
+        Serves the about page
+    '''
+    body_template = template('choosemessagetype.tpl', friendname=friend)
+    header_template = page_view.load_template(header)
+    tailer_template = page_view.load_template(tailer)
+
+    rendered_template = page_view.render(
+        body_template=body_template,
+        header_template=header_template,
+        tailer_template=tailer_template)
+
+    return rendered_template
+
+
+@get('/send_message')
+def send_message():
+    # replace this with your code to display a form to send a message to the selected friend
+    return model.send_message()
+    # return f'Send a message to {friend}'
+
+
+# -----------------------------------------------------------------------------
+
+@post('/send_message')
+def post_sendmessage():
+    '''
+        post_login
+
+        Handles login attempts
+        Expects a form containing 'username' and 'password' fields
+    '''
+
+    # Handle the form processing
+    message = request.forms.get('message')
+    sender=request.forms.get('sender')
+    receiver=request.forms.get('receiver')
+    """SQL method here"""
+
+    return model.show_message(message,sender,receiver)
+
+
+@get('/show_message')
+def get_showmessage(message, header="header", tailer="tailer"):
+    # replace this with your code to display a form to send a message to the selected friend
+    # return f'Send a message to {friend}'
+
+    body_template = template('show_message.tpl', message=message)
+    header_template = page_view.load_template(header)
+    tailer_template = page_view.load_template(tailer)
+
+    rendered_template = page_view.render(
+        body_template=body_template,
+        header_template=header_template,
+        tailer_template=tailer_template)
+
+    return rendered_template
+@get('/receive_form')
+def show_receive_form():
+    # replace this with your code to display a form to send a message to the selected friend
+    return model.receive_form()
+@post('/receive_form')
+def receive_form():
+
+    receiver_name = request.forms.get('receiver')
+    friendname = request.forms.get('sender')
+    message = model.get_receivemessage(receiver_name,friendname)
+    return get_receivemessage(message)
+@get('/receive_message')
+def get_receivemessage(message,header="header", tailer="tailer"):
+    # replace this with your code to display a form to send a message to the selected friend
+    # return f'Send a message to {friend}'
+    print(message)
+    if message == None:
+        message = "No message received"
+    body_template = template('receive_message.tpl', message=message)
+    header_template = page_view.load_template(header)
+    tailer_template = page_view.load_template(tailer)
+
+    rendered_template = page_view.render(
+        body_template=body_template,
+        header_template=header_template,
+        tailer_template=tailer_template)
+
+    return rendered_template
+
 
 @get('/about')
 def get_about():
